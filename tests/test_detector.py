@@ -159,6 +159,26 @@ class TcpTests(unittest.TestCase):
         d.feed(tcp(0.005, True, TCP_RST, ipid=0))
         self.assertEqual(d.alerts, [])
 
+    def test_rst_ctl_ipid_cero_antes_del_rst_real_no_alerta(self):
+        # jitter: llega primero el RST del socket de control (IPID 0, seq atrasado)
+        d = det()
+        handshake(d)
+        d.feed(tcp(0.01, True, TCP_RST, ipid=0, seq=1101))
+        d.feed(tcp(0.011, True, TCP_ACK | TCP_PSH, ipid=102, plen=200, seq=1101))
+        d.feed(tcp(0.012, True, TCP_RST | TCP_ACK, ipid=103, seq=1301))
+        self.assertEqual(d.alerts, [])
+
+    def test_ipid_diferido_cuando_el_rst_llega_primero(self):
+        def flujo(rst_ipid):
+            d = det()
+            d.feed(tcp(0.0, False, TCP_SYN))
+            d.feed(tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0, seq=1000))
+            d.feed(tcp(0.002, True, TCP_RST, ipid=rst_ipid, seq=1001))
+            d.feed(tcp(0.003, True, TCP_ACK, ipid=5000, seq=1001))  # reordenado
+            return d.alerts
+        self.assertEqual(flujo(40000)[0]["reasons"], ["rst_ipid"])
+        self.assertEqual(flujo(5001), [])
+
     def test_rst_seguido_de_trafico_real_alerta(self):
         d = det()
         handshake(d)
