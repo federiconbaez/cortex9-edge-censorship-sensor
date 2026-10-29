@@ -1,0 +1,109 @@
+{
+ "attack": {
+  "alerts": 700,
+  "live_cpu_s": 1.0472,
+  "live_cpu_us_per_packet": 87.77135194032351,
+  "live_packets": 11931,
+  "offline_cpu_us_per_packet": 18.087335512530384,
+  "stats": {
+   "alerts": 700,
+   "cpu_s": 0.2158,
+   "dns_events": 1000,
+   "packets": 11931,
+   "rst_flows": 530,
+   "rst_in": 530,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "attack_unmatched_alerts": {
+  "by_reason": {},
+  "count": 0,
+  "events_not_injected": 1190
+ },
+ "clean": {
+  "alerts": 0,
+  "live_cpu_s": 0.9865,
+  "live_cpu_us_per_packet": 73.28034467389689,
+  "live_packets": 13462,
+  "offline_cpu_us_per_packet": 16.253157034615956,
+  "stats": {
+   "alerts": 0,
+   "cpu_s": 0.2188,
+   "dns_events": 1000,
+   "packets": 13462,
+   "rst_flows": 182,
+   "rst_in": 182,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "clean_fpr": {
+  "by_reason": {},
+  "dns_events": 1000,
+  "events": 2000,
+  "false_alerts": 0,
+  "fpr": 0.0,
+  "legit_rst_flows": 182,
+  "tcp_flows": 1000
+ },
+ "detection": {
+  "dns-copyttl": {
+   "detected": 207,
+   "injected": 207,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 207
+   }
+  },
+  "dns-lowttl": {
+   "detected": 198,
+   "injected": 198,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 198,
+    "dns_ttl": 198
+   }
+  },
+  "rst-copyttl": {
+   "detected": 102,
+   "injected": 104,
+   "rate": 0.9807692307692307,
+   "reasons": {
+    "rst_ipid": 102
+   }
+  },
+  "rst-lowttl": {
+   "detected": 98,
+   "injected": 98,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 98,
+    "rst_ttl": 98
+   }
+  },
+  "rst-mimic-both": {
+   "detected": 0,
+   "injected": 108,
+   "rate": 0.0,
+   "reasons": {}
+  },
+  "rst-mimic-client": {
+   "detected": 95,
+   "injected": 95,
+   "rate": 1.0,
+   "reasons": {
+    "rst_then_traffic": 95
+   }
+  }
+ },
+ "detection_total": {
+  "detected": 700,
+  "injected": 810,
+  "rate": 0.8641975308641975
+ },
+ "fatal": [],
+ "label": "ci-none-s3"
+}

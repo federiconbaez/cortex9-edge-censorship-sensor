@@ -1,0 +1,109 @@
+{
+ "attack": {
+  "alerts": 701,
+  "live_cpu_s": 0.4889,
+  "live_cpu_us_per_packet": 37.98461657990832,
+  "live_packets": 12871,
+  "offline_cpu_us_per_packet": 7.676171237666071,
+  "stats": {
+   "alerts": 701,
+   "cpu_s": 0.0988,
+   "dns_events": 1000,
+   "packets": 12871,
+   "rst_flows": 527,
+   "rst_in": 732,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "attack_unmatched_alerts": {
+  "by_reason": {},
+  "count": 0,
+  "events_not_injected": 1193
+ },
+ "clean": {
+  "alerts": 0,
+  "live_cpu_s": 0.4122,
+  "live_cpu_us_per_packet": 28.345482051987346,
+  "live_packets": 14542,
+  "offline_cpu_us_per_packet": 6.979782698390868,
+  "stats": {
+   "alerts": 0,
+   "cpu_s": 0.1015,
+   "dns_events": 1000,
+   "packets": 14542,
+   "rst_flows": 182,
+   "rst_in": 489,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "clean_fpr": {
+  "by_reason": {},
+  "dns_events": 1000,
+  "events": 2000,
+  "false_alerts": 0,
+  "fpr": 0.0,
+  "legit_rst_flows": 182,
+  "tcp_flows": 1000
+ },
+ "detection": {
+  "dns-copyttl": {
+   "detected": 207,
+   "injected": 207,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 207
+   }
+  },
+  "dns-lowttl": {
+   "detected": 198,
+   "injected": 198,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 198,
+    "dns_ttl": 198
+   }
+  },
+  "rst-copyttl": {
+   "detected": 104,
+   "injected": 104,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 104
+   }
+  },
+  "rst-lowttl": {
+   "detected": 98,
+   "injected": 98,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 98,
+    "rst_ttl": 98
+   }
+  },
+  "rst-mimic-both": {
+   "detected": 0,
+   "injected": 106,
+   "rate": 0.0,
+   "reasons": {}
+  },
+  "rst-mimic-client": {
+   "detected": 94,
+   "injected": 94,
+   "rate": 1.0,
+   "reasons": {
+    "rst_then_traffic": 94
+   }
+  }
+ },
+ "detection_total": {
+  "detected": 701,
+  "injected": 807,
+  "rate": 0.8686493184634448
+ },
+ "fatal": [],
+ "label": "ci-jitter-s3"
+}

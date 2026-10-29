@@ -1,0 +1,111 @@
+{
+ "attack": {
+  "alerts": 665,
+  "live_cpu_s": 1.1476,
+  "live_cpu_us_per_packet": 88.98193378305032,
+  "live_packets": 12897,
+  "offline_cpu_us_per_packet": 18.15926184383965,
+  "stats": {
+   "alerts": 665,
+   "cpu_s": 0.2342,
+   "dns_events": 1000,
+   "packets": 12897,
+   "rst_flows": 510,
+   "rst_in": 698,
+   "tcp_flows": 998
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "attack_unmatched_alerts": {
+  "by_reason": {
+   "rst_then_traffic": 1
+  },
+  "count": 1,
+  "events_not_injected": 1231
+ },
+ "clean": {
+  "alerts": 0,
+  "live_cpu_s": 1.1461,
+  "live_cpu_us_per_packet": 79.42480942480942,
+  "live_packets": 14430,
+  "offline_cpu_us_per_packet": 15.939015939015938,
+  "stats": {
+   "alerts": 0,
+   "cpu_s": 0.23,
+   "dns_events": 1000,
+   "packets": 14430,
+   "rst_flows": 198,
+   "rst_in": 518,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "clean_fpr": {
+  "by_reason": {},
+  "dns_events": 1000,
+  "events": 2000,
+  "false_alerts": 0,
+  "fpr": 0.0,
+  "legit_rst_flows": 198,
+  "tcp_flows": 1000
+ },
+ "detection": {
+  "dns-copyttl": {
+   "detected": 179,
+   "injected": 179,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 179
+   }
+  },
+  "dns-lowttl": {
+   "detected": 213,
+   "injected": 213,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 213,
+    "dns_ttl": 213
+   }
+  },
+  "rst-copyttl": {
+   "detected": 87,
+   "injected": 87,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 87
+   }
+  },
+  "rst-lowttl": {
+   "detected": 92,
+   "injected": 92,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 92,
+    "rst_ttl": 92
+   }
+  },
+  "rst-mimic-both": {
+   "detected": 0,
+   "injected": 103,
+   "rate": 0.0,
+   "reasons": {}
+  },
+  "rst-mimic-client": {
+   "detected": 93,
+   "injected": 93,
+   "rate": 1.0,
+   "reasons": {
+    "rst_then_traffic": 93
+   }
+  }
+ },
+ "detection_total": {
+  "detected": 664,
+  "injected": 767,
+  "rate": 0.8657105606258149
+ },
+ "fatal": [],
+ "label": "ci-jitter-s2"
+}

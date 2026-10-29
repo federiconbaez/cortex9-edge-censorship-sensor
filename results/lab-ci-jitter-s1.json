@@ -1,0 +1,113 @@
+{
+ "attack": {
+  "alerts": 675,
+  "live_cpu_s": 1.0369,
+  "live_cpu_us_per_packet": 80.1004248744689,
+  "live_packets": 12945,
+  "offline_cpu_us_per_packet": 17.628427964465043,
+  "stats": {
+   "alerts": 675,
+   "cpu_s": 0.2282,
+   "dns_events": 1000,
+   "packets": 12945,
+   "rst_flows": 492,
+   "rst_in": 665,
+   "tcp_flows": 983
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "attack_unmatched_alerts": {
+  "by_reason": {},
+  "count": 0,
+  "events_not_injected": 1213
+ },
+ "clean": {
+  "alerts": 0,
+  "live_cpu_s": 1.043,
+  "live_cpu_us_per_packet": 72.40541478653245,
+  "live_packets": 14405,
+  "offline_cpu_us_per_packet": 15.952794168691426,
+  "stats": {
+   "alerts": 0,
+   "cpu_s": 0.2298,
+   "dns_events": 1000,
+   "packets": 14405,
+   "rst_flows": 182,
+   "rst_in": 464,
+   "tcp_flows": 1000
+  },
+  "workload_dns": 1000,
+  "workload_tcp": 1000
+ },
+ "clean_fpr": {
+  "by_reason": {},
+  "dns_events": 1000,
+  "events": 2000,
+  "false_alerts": 0,
+  "fpr": 0.0,
+  "legit_rst_flows": 182,
+  "tcp_flows": 1000
+ },
+ "detection": {
+  "dns-copyttl": {
+   "detected": 201,
+   "injected": 201,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 201
+   }
+  },
+  "dns-lowttl": {
+   "detected": 203,
+   "injected": 203,
+   "rate": 1.0,
+   "reasons": {
+    "dns_race": 203,
+    "dns_ttl": 202
+   }
+  },
+  "rst-copyttl": {
+   "detected": 85,
+   "injected": 85,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 85,
+    "rst_then_traffic": 2
+   }
+  },
+  "rst-lowttl": {
+   "detected": 85,
+   "injected": 85,
+   "rate": 1.0,
+   "reasons": {
+    "rst_ipid": 85,
+    "rst_then_traffic": 1,
+    "rst_ttl": 85
+   }
+  },
+  "rst-mimic-both": {
+   "detected": 1,
+   "injected": 96,
+   "rate": 0.010416666666666666,
+   "reasons": {
+    "rst_then_traffic": 1
+   }
+  },
+  "rst-mimic-client": {
+   "detected": 100,
+   "injected": 100,
+   "rate": 1.0,
+   "reasons": {
+    "rst_then_traffic": 100
+   }
+  }
+ },
+ "detection_total": {
+  "detected": 675,
+  "injected": 770,
+  "rate": 0.8766233766233766
+ },
+ "fatal": [],
+ "label": "ci-jitter-s1"
+}
