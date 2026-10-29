@@ -15,8 +15,11 @@ TCP RST entrante, línea base por flujo del lado remoto
   rst_ipid   el remoto venía con IPID no nulo (>= ipid_min_samples muestras,
              def. 1; si hay varias, con saltos 1..ipid_window) y el IPID del
              RST no cae en (último, último + ipid_window].
-  rst_then_traffic  después del RST llega más tráfico del remoto con el TTL
-             de la línea base (el extremo real no se enteró del RST).
+  rst_then_traffic  después del RST llega del remoto, con el TTL de la
+             línea base, un segmento que termina más allá del seq del RST
+             (datos nuevos: el extremo real no se enteró del RST). Los
+             segmentos reordenados que terminan antes no cuentan.
+  Solo se juzga el primer RST entrante de cada flujo.
 
 Las alertas no llevan IPs ni nombres en claro: el qname va como HMAC-SHA256
 con una sal por corrida; se conservan puertos y txid para correlacionar.
@@ -27,7 +30,7 @@ import ipaddress
 import os
 from collections import Counter, deque
 
-from .packets import TCP_RST, parse_dns
+from .packets import TCP_FIN, TCP_RST, parse_dns
 
 
 def mode(xs):
@@ -134,9 +137,14 @@ class Detector:
         akey = {"cport": key[1], "sport": key[3]}
         if p.flags & TCP_RST:
             self.stats["rst_in"] += 1
-            if not f["rst"]:
-                self.stats["rst_flows"] += 1
             f["rst"].append(p.ts)
+            if len(f["rst"]) > 1:
+                # Solo se juzga el primer RST: los siguientes son consecuencia
+                # (p.ej. RST de Linux con IPID 0 desde el socket de control
+                # cuando llegan ACKs a una conexión ya cerrada).
+                return
+            self.stats["rst_flows"] += 1
+            f["rst_seq"] = p.seq
             if f["ttl"] and abs(p.ttl - mode(f["ttl"])) >= self.ttl_delta:
                 self._alert(f, "rst", p.ts, akey, "rst_ttl")
             ids = [i for i in f["ipid"] if i != 0]
@@ -148,7 +156,12 @@ class Detector:
                         self._alert(f, "rst", p.ts, akey, "rst_ipid")
             return
         # tráfico normal del remoto
-        if f["rst"] and f["ttl"] and abs(p.ttl - mode(f["ttl"])) < self.ttl_delta \
+        # Tráfico nuevo después del RST: el segmento termina más allá del seq
+        # del RST. Un segmento reordenado (enviado antes del RST) termina en o
+        # antes de ese seq y no cuenta.
+        end = (p.seq + p.payload_len + (1 if p.flags & TCP_FIN else 0)) % 2**32
+        new_data = f["rst"] and 0 < (end - f["rst_seq"]) % 2**32 < 2**31
+        if new_data and f["ttl"] and abs(p.ttl - mode(f["ttl"])) < self.ttl_delta \
                 and p.ts - f["rst"][0] <= self.window_s:
             self._alert(f, "rst", f["rst"][0], akey, "rst_then_traffic")
         f["ttl"].append(p.ttl)

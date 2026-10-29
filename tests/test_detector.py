@@ -30,10 +30,10 @@ def r(ts, txid, name, ips, ttl=63, sport=40000):
     return Pkt(ts, R, C, ttl, 2, 17, 53, sport, payload=dns_bytes(txid, name, True, ips))
 
 
-def tcp(ts, frm_server, flags, ttl=63, ipid=0, cport=50000, plen=0):
+def tcp(ts, frm_server, flags, ttl=63, ipid=0, cport=50000, plen=0, seq=0):
     if frm_server:
-        return Pkt(ts, S, C, ttl, ipid, 6, 80, cport, flags=flags, payload_len=plen)
-    return Pkt(ts, C, S, 64, ipid, 6, cport, 80, flags=flags, payload_len=plen)
+        return Pkt(ts, S, C, ttl, ipid, 6, 80, cport, seq=seq, flags=flags, payload_len=plen)
+    return Pkt(ts, C, S, 64, ipid, 6, cport, 80, seq=seq, flags=flags, payload_len=plen)
 
 
 def det():
@@ -109,12 +109,13 @@ class DnsTests(unittest.TestCase):
 
 
 def handshake(d, ipid0=100):
+    # servidor: ISN 1000; tras el SYN-ACK su seq es 1001; manda 100 bytes -> 1101
     d.feed(tcp(0.0, False, TCP_SYN))
-    d.feed(tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0))
+    d.feed(tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0, seq=1000))
     d.feed(tcp(0.002, False, TCP_ACK))
     d.feed(tcp(0.003, False, TCP_ACK | TCP_PSH, plen=80))
-    d.feed(tcp(0.004, True, TCP_ACK, ipid=ipid0))
-    d.feed(tcp(0.005, True, TCP_ACK | TCP_PSH, ipid=ipid0 + 1, plen=100))
+    d.feed(tcp(0.004, True, TCP_ACK, ipid=ipid0, seq=1001))
+    d.feed(tcp(0.005, True, TCP_ACK | TCP_PSH, ipid=ipid0 + 1, plen=100, seq=1001))
 
 
 class TcpTests(unittest.TestCase):
@@ -161,10 +162,27 @@ class TcpTests(unittest.TestCase):
     def test_rst_seguido_de_trafico_real_alerta(self):
         d = det()
         handshake(d)
-        d.feed(tcp(0.01, True, TCP_RST, ipid=102))
+        d.feed(tcp(0.01, True, TCP_RST, ipid=102, seq=1101))
         self.assertEqual(d.alerts, [])
-        d.feed(tcp(0.1, True, TCP_ACK | TCP_PSH, ipid=103, plen=50))
+        d.feed(tcp(0.1, True, TCP_ACK | TCP_PSH, ipid=103, plen=50, seq=1101))
         self.assertEqual(d.alerts[0]["reasons"], ["rst_then_traffic"])
+
+    def test_segmento_reordenado_tras_rst_legitimo_no_alerta(self):
+        d = det()
+        handshake(d)
+        # el servidor mandó 200 bytes más (1101..1301) y luego RST seq=1301;
+        # con jitter el RST llega antes que el segmento de datos
+        d.feed(tcp(0.01, True, TCP_RST | TCP_ACK, ipid=104, seq=1301))
+        d.feed(tcp(0.011, True, TCP_ACK | TCP_PSH, ipid=103, plen=200, seq=1101))
+        self.assertEqual(d.alerts, [])
+
+    def test_rst_posterior_con_ipid_cero_no_se_juzga(self):
+        d = det()
+        handshake(d)
+        d.feed(tcp(0.01, True, TCP_RST | TCP_ACK, ipid=102, seq=1101))
+        d.feed(tcp(0.02, True, TCP_RST, ipid=0, seq=1101))  # RST del socket de control
+        self.assertEqual(d.alerts, [])
+        self.assertEqual((d.stats["rst_in"], d.stats["rst_flows"]), (2, 1))
 
     def test_rst_a_syn_sin_linea_base_no_alerta(self):
         d = det()

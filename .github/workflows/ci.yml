@@ -45,6 +45,7 @@ jobs:
             work/*/stats*.json
             work/*/truth.jsonl
             work/*/alerts*.jsonl
+            work/*/capture.pcap
 
   criteria:
     needs: lab
