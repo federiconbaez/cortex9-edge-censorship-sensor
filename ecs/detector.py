@@ -12,9 +12,9 @@ DNS (respuestas UDP/53 entrantes)
 
 TCP RST entrante, línea base por flujo del lado remoto
   rst_ttl    TTL IP del RST lejos (>= ttl_delta) de la moda del flujo.
-  rst_ipid   el remoto venía con IPID creciente (>= 2 muestras no nulas,
-             saltos 1..ipid_window) y el IPID del RST cae fuera de esa
-             ventana.
+  rst_ipid   el remoto venía con IPID no nulo (>= ipid_min_samples muestras,
+             def. 1; si hay varias, con saltos 1..ipid_window) y el IPID del
+             RST no cae en (último, último + ipid_window].
   rst_then_traffic  después del RST llega más tráfico del remoto con el TTL
              de la línea base (el extremo real no se enteró del RST).
 
@@ -35,10 +35,11 @@ def mode(xs):
 
 
 class Detector:
-    def __init__(self, local_nets, ttl_delta=2, ipid_window=256, salt=None, window_s=5.0):
+    def __init__(self, local_nets, ttl_delta=2, ipid_window=256, ipid_min_samples=1, salt=None, window_s=5.0):
         self.local = [ipaddress.ip_network(n) for n in local_nets]
         self.ttl_delta = ttl_delta
         self.ipid_window = ipid_window
+        self.ipid_min_samples = ipid_min_samples
         self.salt = salt if salt is not None else os.urandom(16)
         self.window_s = window_s
         self.dns = {}          # key -> {"q": n, "resp": [answers...], "alert": dict|None, "t": ts}
@@ -139,7 +140,7 @@ class Detector:
             if f["ttl"] and abs(p.ttl - mode(f["ttl"])) >= self.ttl_delta:
                 self._alert(f, "rst", p.ts, akey, "rst_ttl")
             ids = [i for i in f["ipid"] if i != 0]
-            if len(ids) >= 2:
+            if len(ids) >= self.ipid_min_samples and f["ipid"] and f["ipid"][-1] != 0:
                 deltas = [(b - a) % 65536 for a, b in zip(ids, ids[1:])]
                 if all(1 <= d <= self.ipid_window for d in deltas):
                     d = (p.ipid - ids[-1]) % 65536

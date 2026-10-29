@@ -138,6 +138,26 @@ class TcpTests(unittest.TestCase):
         d.feed(tcp(0.01, True, TCP_RST, ipid=40000))
         self.assertEqual(d.alerts[0]["reasons"], ["rst_ipid"])
 
+    def test_rst_ipid_con_una_sola_muestra(self):
+        d = det()
+        d.feed(tcp(0.0, False, TCP_SYN))
+        d.feed(tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0))
+        d.feed(tcp(0.004, True, TCP_ACK, ipid=27655))
+        d.feed(tcp(0.005, True, TCP_RST, ipid=57753))
+        self.assertEqual(d.alerts[0]["reasons"], ["rst_ipid"])
+        d2 = Detector(LOCAL, salt=b"k" * 16, ipid_min_samples=2)
+        for p in (tcp(0.0, False, TCP_SYN), tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0),
+                  tcp(0.004, True, TCP_ACK, ipid=27655), tcp(0.005, True, TCP_RST, ipid=57753)):
+            d2.feed(p)
+        self.assertEqual(d2.alerts, [])
+
+    def test_rst_ipid_cero_tras_ipid_cero_no_alerta(self):
+        d = det()
+        d.feed(tcp(0.0, False, TCP_SYN))
+        d.feed(tcp(0.001, True, TCP_SYN | TCP_ACK, ipid=0))
+        d.feed(tcp(0.005, True, TCP_RST, ipid=0))
+        self.assertEqual(d.alerts, [])
+
     def test_rst_seguido_de_trafico_real_alerta(self):
         d = det()
         handshake(d)

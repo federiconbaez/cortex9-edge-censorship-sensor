@@ -26,11 +26,12 @@ def main(argv=None):
     ap.add_argument("--seconds", type=float, default=0, help="live: duración (0 = hasta SIGINT/SIGTERM)")
     ap.add_argument("--local-net", action="append", required=True, help="prefijo(s) del lado local (LAN)")
     ap.add_argument("--ttl-delta", type=int, default=2)
+    ap.add_argument("--ipid-min-samples", type=int, default=1)
     ap.add_argument("--salt-hex", help="sal fija (solo para reproducibilidad en el laboratorio)")
     ap.add_argument("--alerts", default="-", help="archivo JSONL de alertas (- = stdout)")
     ap.add_argument("--stats")
     a = ap.parse_args(argv)
-    det = Detector(a.local_net, ttl_delta=a.ttl_delta,
+    det = Detector(a.local_net, ttl_delta=a.ttl_delta, ipid_min_samples=a.ipid_min_samples,
                    salt=bytes.fromhex(a.salt_hex) if a.salt_hex else None)
     c0, t0 = cpu_s(), time.time()
     if a.mode == "offline":
