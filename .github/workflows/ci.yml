@@ -1,0 +1,64 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 --version
+      - run: python3 -m unittest discover -s tests -t . -v
+      - run: python3 -m py_compile ecs/*.py lab/*.py && bash -n lab/*.sh
+
+  lab:
+    needs: unit
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [1, 2, 3]
+        net: [none, jitter]
+    steps:
+      - uses: actions/checkout@v4
+      - name: dependencias (scapy fijado)
+        run: sudo python3 -m pip install --break-system-packages scapy==2.8.0
+      - name: sch_netem (solo perfil jitter; falla si no existe)
+        if: matrix.net == 'jitter'
+        run: sudo modprobe sch_netem || { sudo apt-get update && sudo apt-get install -y "linux-modules-extra-$(uname -r)" && sudo modprobe sch_netem; }
+      - name: laboratorio (netns + middlebox emulado)
+        run: |
+          NETEM=""; [ "${{ matrix.net }}" = jitter ] && NETEM="delay 5ms 3ms"
+          sudo env PY=python3 DNS_N=1000 TCP_N=1000 SEED=${{ matrix.seed }} ISEED=$((100 + ${{ matrix.seed }})) NETEM="$NETEM" \
+            lab/run_lab.sh "$PWD/work"
+      - name: puntuación
+        run: python3 lab/score.py work "ci-${{ matrix.net }}-s${{ matrix.seed }}" "results/lab-ci-${{ matrix.net }}-s${{ matrix.seed }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab-${{ matrix.net }}-s${{ matrix.seed }}
+          path: |
+            results/lab-*.json
+            work/*/stats*.json
+            work/*/truth.jsonl
+            work/*/alerts*.jsonl
+
+  criteria:
+    needs: lab
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lab-*
+          path: art
+      - run: mkdir -p results && cp art/*/results/lab-*.json results/ && ls results
+      - name: criterios (FPR <= 0.5 %, detección >= 95 % por familia salvo el punto ciego)
+        run: python3 lab/summarize.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: summary
+          path: results/
